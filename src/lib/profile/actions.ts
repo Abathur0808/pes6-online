@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export interface AvatarResult {
   error?: string;
@@ -15,48 +16,8 @@ const ALLOWED: Record<string, string> = {
   "image/webp": ".webp",
 };
 
-/**
- * Moderación de contenido vía Sightengine (plan gratis ~500 ops/mes).
- * Rechaza desnudos, contenido sexual, gore y menores en contexto sexual.
- * Si las claves no están configuradas, la moderación se omite — el resto
- * de validaciones (tipo, tamaño) siguen aplicando.
- */
-async function isSafeImage(
-  fileBytes: ArrayBuffer,
-  fileName: string
-): Promise<boolean> {
-  const apiUser = process.env.SIGHTENGINE_API_USER;
-  const apiSecret = process.env.SIGHTENGINE_API_SECRET;
-  if (!apiUser || !apiSecret) return true; // moderación desactivada en dev
-
-  try {
-    const form = new FormData();
-    form.append("models", "nudity-2.1,gore-2.0");
-    form.append("api_user", apiUser);
-    form.append("api_secret", apiSecret);
-    form.append("media", new Blob([fileBytes]), fileName);
-
-    const res = await fetch("https://api.sightengine.com/1.0/check.json", {
-      method: "POST",
-      body: form,
-      cache: "no-store",
-    });
-    if (!res.ok) return true; // si el moderador falla, no bloquear la subida
-
-    const data = await res.json();
-    const nudity = data.nudity ?? {};
-    const gore = data.gore ?? {};
-    const flagged =
-      (nudity.sexual_activity ?? 0) > 0.5 ||
-      (nudity.sexual_display ?? 0) > 0.5 ||
-      (nudity.erotica ?? 0) > 0.7 ||
-      (nudity.suggestive ?? 0) > 0.9 ||
-      (gore.prob ?? 0) > 0.5;
-    return !flagged;
-  } catch {
-    return true; // fallo de red en moderador → permitir (revisión manual)
-  }
-}
+/** Reportes necesarios para retirar un avatar y bloquear nuevas subidas. */
+const REPORT_THRESHOLD = 3;
 
 export async function uploadAvatar(
   _prev: AvatarResult,
@@ -68,6 +29,19 @@ export async function uploadAvatar(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Debes iniciar sesión." };
 
+  // Baneado de avatar tras acumular reportes: no puede subir.
+  const { data: me } = await supabase
+    .from("profiles")
+    .select("avatar_banned")
+    .eq("id", user.id)
+    .single();
+  if (me?.avatar_banned) {
+    return {
+      error:
+        "Tu cuenta está bloqueada para subir fotos tras varios reportes. Contacta con la comunidad.",
+    };
+  }
+
   const file = formData.get("avatar");
   if (!(file instanceof File) || file.size === 0) {
     return { error: "Elige una imagen." };
@@ -75,14 +49,6 @@ export async function uploadAvatar(
   const ext = ALLOWED[file.type];
   if (!ext) return { error: "Solo se permiten JPG, PNG o WebP." };
   if (file.size > MAX_BYTES) return { error: "La imagen no puede superar 2 MB." };
-
-  const bytes = await file.arrayBuffer();
-  if (!(await isSafeImage(bytes, file.name))) {
-    return {
-      error:
-        "La imagen no pasó el filtro de contenido. Elige una foto apropiada.",
-    };
-  }
 
   const path = `${user.id}/avatar${ext}`;
   const { error: upErr } = await supabase.storage
@@ -103,6 +69,60 @@ export async function uploadAvatar(
   if (pErr) return { error: pErr.message };
 
   revalidatePath("/perfil");
+  revalidatePath("/salas");
+  return { ok: true };
+}
+
+/**
+ * Reporta el avatar de otro usuario. A los REPORT_THRESHOLD reportes
+ * distintos, el backend retira la foto y bloquea nuevas subidas.
+ * La PK (reported_id, reporter_id) impide reportar dos veces.
+ */
+export async function reportAvatar(
+  reportedId: string
+): Promise<AvatarResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Debes iniciar sesión." };
+  if (user.id === reportedId)
+    return { error: "No puedes reportarte a ti mismo." };
+
+  const { error } = await supabase
+    .from("avatar_reports")
+    .insert({ reported_id: reportedId, reporter_id: user.id });
+
+  // Duplicado (23505) = ya lo reportaste; éxito silencioso.
+  if (error && error.code === "23505") return { ok: true };
+  if (error) return { error: error.message };
+
+  // Contar reportes y aplicar el baneo con service role (salta RLS).
+  const admin = createAdminClient();
+  const { count } = await admin
+    .from("avatar_reports")
+    .select("*", { count: "exact", head: true })
+    .eq("reported_id", reportedId);
+
+  if ((count ?? 0) >= REPORT_THRESHOLD) {
+    const { data: prof } = await admin
+      .from("profiles")
+      .select("avatar_url")
+      .eq("id", reportedId)
+      .single();
+
+    if (prof?.avatar_url) {
+      // Borrar el archivo del storage (ruta "<uid>/avatar.ext").
+      const path = prof.avatar_url.split("/avatars/")[1]?.split("?")[0];
+      if (path) await admin.storage.from("avatars").remove([path]);
+    }
+
+    await admin
+      .from("profiles")
+      .update({ avatar_url: null, avatar_banned: true })
+      .eq("id", reportedId);
+  }
+
   revalidatePath("/salas");
   return { ok: true };
 }

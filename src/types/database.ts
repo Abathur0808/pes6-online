@@ -20,6 +20,8 @@ export interface Profile {
   id: string;
   username: string;
   avatar_url: string | null;
+  /** true = foto retirada por reportes; no puede volver a subir. */
+  avatar_banned?: boolean;
   created_at: string;
   matches_played: number;
   wins: number;

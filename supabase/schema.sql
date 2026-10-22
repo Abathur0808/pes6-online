@@ -250,6 +250,24 @@ create policy "room_messages_insert_member" on public.room_messages
     )
   );
 
+-- ---------- avatar_reports (moderación comunitaria) ----------
+alter table public.profiles
+  add column if not exists avatar_banned boolean not null default false;
+
+create table if not exists public.avatar_reports (
+  reported_id uuid not null references public.profiles (id) on delete cascade,
+  reporter_id uuid not null references public.profiles (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (reported_id, reporter_id),
+  check (reported_id <> reporter_id)
+);
+
+alter table public.avatar_reports enable row level security;
+create policy "avatar_reports_insert_own" on public.avatar_reports
+  for insert with check (auth.uid() = reporter_id);
+create policy "avatar_reports_read_own" on public.avatar_reports
+  for select using (auth.uid() = reporter_id);
+
 -- Realtime para salas (Supabase Realtime → enable en Dashboard o):
 alter publication supabase_realtime add table public.rooms;
 alter publication supabase_realtime add table public.room_members;

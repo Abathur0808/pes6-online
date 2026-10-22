@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { leaveRoom, setReady, setRoomStatus } from "@/lib/rooms/actions";
 import { ChatPanel } from "@/components/chat-panel";
+import { ReportAvatarButton } from "@/components/report-avatar-button";
 import {
   DEFAULT_SERVER,
   GATE_HOST,
@@ -150,6 +151,14 @@ export function RoomPanel({
                 >
                   {m.ready ? "● Listo" : "○ Preparándose"}
                 </p>
+                {m.user_id !== currentUserId && m.profile?.avatar_url && (
+                  <div className="mt-1">
+                    <ReportAvatarButton
+                      reportedId={m.user_id}
+                      username={m.profile.username}
+                    />
+                  </div>
+                )}
               </>
             ) : (
               <p className="py-6 text-sm uppercase tracking-wider text-neutral-600">
