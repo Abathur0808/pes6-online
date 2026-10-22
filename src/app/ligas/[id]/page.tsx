@@ -2,10 +2,13 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import {
+  ApplySwapButton,
+  CreateLowerDivisionButton,
   FinishLeagueButton,
   GenerateFixtureButton,
   JoinLeagueButton,
   LeaveLeagueButton,
+  ResetSeasonButton,
 } from "@/components/league-buttons";
 import {
   AwardWinButtons,
@@ -54,6 +57,20 @@ export default async function LigaDetailPage({
     .eq("id", id)
     .single<League>();
   if (!league) notFound();
+
+  // División inferior enlazada (si existe) y liga padre (si esta es hija).
+  const { data: child } = await supabase
+    .from("leagues")
+    .select("id, name, status")
+    .eq("parent_league_id", id)
+    .maybeSingle();
+  const { data: parent } = league.parent_league_id
+    ? await supabase
+        .from("leagues")
+        .select("id, name")
+        .eq("id", league.parent_league_id)
+        .single()
+    : { data: null };
 
   const [{ data: members }, { data: matches }] = await Promise.all([
     supabase
@@ -122,7 +139,14 @@ export default async function LigaDetailPage({
             {league.name}
           </h1>
           <p className="text-sm uppercase tracking-wider text-neutral-500">
-            {STATUS[league.status]} · {memberList.length} participantes
+            {STATUS[league.status]} · {memberList.length}
+            {league.max_members ? `/${league.max_members}` : ""} participantes
+            {league.division && league.division > 1
+              ? ` · División ${league.division}`
+              : ""}
+            {league.relegation_size
+              ? ` · ${league.relegation_size} ${league.relegation_size === 1 ? "ascenso" : "ascensos"}`
+              : ""}
           </p>
         </div>
         <Link href="/ligas" className="text-sm text-neutral-400 underline">
@@ -134,19 +158,61 @@ export default async function LigaDetailPage({
         <p className="mt-4 text-neutral-400">{league.description}</p>
       )}
 
+      {/* Enlaces entre divisiones */}
+      {(parent || child) && (
+        <div className="mt-3 flex flex-wrap gap-3 text-sm">
+          {parent && (
+            <Link
+              href={`/ligas/${parent.id}`}
+              className="text-pitch-light hover:text-pitch"
+            >
+              ↑ Primera división: {parent.name}
+            </Link>
+          )}
+          {child && (
+            <Link
+              href={`/ligas/${child.id}`}
+              className="text-gold hover:text-yellow-300"
+            >
+              ↓ Liga de ascenso: {child.name}
+            </Link>
+          )}
+        </div>
+      )}
+
       {/* Acciones */}
-      <div className="mt-6 flex flex-wrap gap-3">
+      <div className="mt-6 flex flex-wrap items-center gap-3">
         {league.status === "draft" && user && !isMember && (
-          <JoinLeagueButton leagueId={id} />
+          memberList.length >= (league.max_members ?? 16) ? (
+            <span className="rounded border border-red-800/60 px-4 py-2 text-sm uppercase tracking-wider text-red-400">
+              Liga llena
+              {child ? " — abajo tienes la de ascenso" : ""}
+            </span>
+          ) : (
+            <JoinLeagueButton leagueId={id} />
+          )
         )}
         {league.status === "draft" && isMember && !isOwner && (
           <LeaveLeagueButton leagueId={id} />
         )}
         {league.status === "draft" && isOwner && (
-          <GenerateFixtureButton leagueId={id} memberCount={memberList.length} />
+          <>
+            <GenerateFixtureButton leagueId={id} memberCount={memberList.length} />
+            {(league.relegation_size ?? 0) > 0 && !child && (
+              <CreateLowerDivisionButton leagueId={id} />
+            )}
+          </>
         )}
         {league.status === "active" && isOwner && (
           <FinishLeagueButton leagueId={id} />
+        )}
+        {league.status === "finished" && isOwner && (
+          <>
+            {(league.relegation_size ?? 0) > 0 && child && !league.swapped && (
+              <ApplySwapButton leagueId={id} />
+            )}
+            <ResetSeasonButton leagueId={id} />
+          </>
         )}
       </div>
 

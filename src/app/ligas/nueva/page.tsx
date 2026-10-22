@@ -56,10 +56,43 @@ export default function NuevaLigaPage() {
           />
         </label>
 
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block text-sm uppercase tracking-wide text-neutral-400">
+            Aforo
+            <select
+              name="max_members"
+              defaultValue="16"
+              className="mt-1 w-full rounded border border-carbon-600 bg-carbon-900 px-3 py-2 text-neutral-200 outline-none focus:border-pitch"
+            >
+              {[6, 8, 10, 12, 14, 16, 20, 24, 32].map((n) => (
+                <option key={n} value={n}>
+                  {n} jugadores
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block text-sm uppercase tracking-wide text-neutral-400">
+            Ascensos/descensos
+            <select
+              name="relegation_size"
+              defaultValue="0"
+              className="mt-1 w-full rounded border border-carbon-600 bg-carbon-900 px-3 py-2 text-neutral-200 outline-none focus:border-pitch"
+            >
+              <option value="0">Sin ascensos</option>
+              {[1, 2, 3, 4].map((n) => (
+                <option key={n} value={n}>
+                  {n} {n === 1 ? "plaza" : "plazas"}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
         <p className="text-xs text-neutral-500">
           Entras como primer participante. Mientras la liga esté en
-          inscripciones cualquiera puede unirse; cuando el organizador genere
-          el calendario se cierran las inscripciones.
+          inscripciones cualquiera puede unirse hasta llenar el aforo; con
+          ascensos podrás crear una división inferior y los mejores de ahí
+          subirán al terminar la temporada.
         </p>
 
         {state.error && (

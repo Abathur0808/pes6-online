@@ -124,6 +124,16 @@ export interface League {
   status: LeagueStatus;
   created_by: string;
   created_at: string;
+  /** Aforo de inscritos (al llenarse se deriva a la división inferior). */
+  max_members?: number;
+  /** 1 = primera división, 2 = ascenso, etc. */
+  division?: number;
+  /** Liga de la que esta es división inferior (null = primera división). */
+  parent_league_id?: string | null;
+  /** Plazas que ascienden/descienden al terminar (0 = sin ascensos). */
+  relegation_size?: number;
+  /** true si ya se aplicó el intercambio de ascenso/descenso. */
+  swapped?: boolean;
 }
 
 export interface LeagueMember {

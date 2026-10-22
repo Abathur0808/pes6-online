@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export interface LeagueResult {
   error?: string;
@@ -19,6 +20,15 @@ export async function createLeague(
   if (name.length < 3 || name.length > 60) {
     return { error: "El nombre debe tener entre 3 y 60 caracteres." };
   }
+  // Aforo 2-64; plazas de ascenso/descenso 0-4 (0 = sin ascensos).
+  const maxMembers = Math.min(
+    64,
+    Math.max(2, Number(formData.get("max_members")) || 16)
+  );
+  const relegationSize = Math.min(
+    4,
+    Math.max(0, Number(formData.get("relegation_size")) || 0)
+  );
 
   const supabase = await createClient();
   const {
@@ -28,7 +38,13 @@ export async function createLeague(
 
   const { data: league, error } = await supabase
     .from("leagues")
-    .insert({ name, description: description || null, created_by: user.id })
+    .insert({
+      name,
+      description: description || null,
+      created_by: user.id,
+      max_members: maxMembers,
+      relegation_size: relegationSize,
+    })
     .select("id")
     .single();
   if (error || !league) return { error: error?.message ?? "Error al crear." };
@@ -47,6 +63,19 @@ export async function joinLeague(leagueId: string): Promise<void> {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return;
+
+  // Aforo: no dejar entrar si la liga está llena.
+  const { data: league } = await supabase
+    .from("leagues")
+    .select("max_members, status")
+    .eq("id", leagueId)
+    .single();
+  if (!league || league.status !== "draft") return;
+  const { count } = await supabase
+    .from("league_members")
+    .select("*", { count: "exact", head: true })
+    .eq("league_id", leagueId);
+  if ((count ?? 0) >= (league.max_members ?? 16)) return;
 
   await supabase
     .from("league_members")
@@ -204,9 +233,7 @@ export async function confirmScore(matchId: string): Promise<LeagueResult> {
 
   const { data: match } = await supabase
     .from("league_matches")
-    .select(
-      "league_id, home_user_id, away_user_id, status, reported_by"
-    )
+    .select("league_id, home_user_id, away_user_id, status, reported_by")
     .eq("id", matchId)
     .single();
   if (!match || match.status !== "pending_confirm")
@@ -358,4 +385,201 @@ export async function finishLeague(leagueId: string): Promise<void> {
     .eq("created_by", user.id);
 
   revalidatePath("/ligas");
+}
+
+// ---------- Divisiones: ascenso y descenso ----------
+
+/** Clasificación ordenada (puntos, diferencia, goles a favor). */
+async function computeStandings(
+  admin: ReturnType<typeof createAdminClient>,
+  leagueId: string
+): Promise<string[]> {
+  const [{ data: members }, { data: matches }] = await Promise.all([
+    admin.from("league_members").select("user_id").eq("league_id", leagueId),
+    admin
+      .from("league_matches")
+      .select("home_user_id, away_user_id, home_score, away_score")
+      .eq("league_id", leagueId)
+      .eq("status", "played"),
+  ]);
+  const st = new Map<string, { pts: number; gd: number; gf: number }>();
+  for (const m of members ?? []) st.set(m.user_id, { pts: 0, gd: 0, gf: 0 });
+  for (const m of matches ?? []) {
+    const h = st.get(m.home_user_id);
+    const a = st.get(m.away_user_id);
+    if (!h || !a) continue;
+    const hs = m.home_score ?? 0;
+    const as = m.away_score ?? 0;
+    h.gd += hs - as;
+    h.gf += hs;
+    a.gd += as - hs;
+    a.gf += as;
+    if (hs > as) h.pts += 3;
+    else if (hs < as) a.pts += 3;
+    else {
+      h.pts += 1;
+      a.pts += 1;
+    }
+  }
+  return [...st.entries()]
+    .sort(
+      (x, y) => y[1].pts - x[1].pts || y[1].gd - x[1].gd || y[1].gf - x[1].gf
+    )
+    .map(([id]) => id);
+}
+
+/**
+ * El organizador de una liga de primera división crea su división de
+ * ascenso enlazada: quien no entre en la principal se inscribe aquí.
+ */
+export async function createLowerDivision(
+  parentId: string
+): Promise<LeagueResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Debes iniciar sesión." };
+
+  const { data: parent } = await supabase
+    .from("leagues")
+    .select("name, created_by, division, status")
+    .eq("id", parentId)
+    .single();
+  if (!parent || parent.created_by !== user.id)
+    return { error: "Solo el organizador crea divisiones." };
+  if (parent.status !== "draft")
+    return { error: "Crea la división antes de empezar la liga." };
+
+  // ¿Ya tiene una hija? No duplicar.
+  const { data: existing } = await supabase
+    .from("leagues")
+    .select("id")
+    .eq("parent_league_id", parentId)
+    .maybeSingle();
+  if (existing) return { error: "Esta liga ya tiene división de ascenso." };
+
+  const division = (parent.division ?? 1) + 1;
+  const { data: child, error } = await supabase
+    .from("leagues")
+    .insert({
+      name: `${parent.name} · División ${division}`,
+      description: `Liga de ascenso de ${parent.name}`,
+      created_by: user.id,
+      parent_league_id: parentId,
+      division,
+    })
+    .select("id")
+    .single();
+  if (error || !child) return { error: error?.message ?? "Error al crear." };
+
+  revalidatePath(`/ligas/${parentId}`);
+  revalidatePath("/ligas");
+  return { ok: true };
+}
+
+/**
+ * Intercambio de fin de temporada: relegation_size equipos del fondo de
+ * la liga superior bajan y los del top de la inferior suben.
+ * Requiere ambas ligas terminadas; solo el organizador; una sola vez.
+ */
+export async function applyPromotionRelegation(
+  parentId: string
+): Promise<LeagueResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Debes iniciar sesión." };
+
+  const { data: parent } = await supabase
+    .from("leagues")
+    .select("created_by, status, relegation_size, swapped")
+    .eq("id", parentId)
+    .single();
+  if (!parent || parent.created_by !== user.id)
+    return { error: "Solo el organizador." };
+  if (parent.status !== "finished")
+    return { error: "Termina primero la temporada de esta liga." };
+  if ((parent.relegation_size ?? 0) <= 0)
+    return { error: "Esta liga está configurada sin ascensos/descensos." };
+  if (parent.swapped) return { error: "El ascenso/descenso ya se aplicó." };
+
+  const { data: child } = await supabase
+    .from("leagues")
+    .select("id, status")
+    .eq("parent_league_id", parentId)
+    .maybeSingle();
+  if (!child) return { error: "Esta liga no tiene división de ascenso." };
+  if (child.status !== "finished")
+    return { error: "La división de ascenso aún no ha terminado." };
+
+  const admin = createAdminClient();
+  const n = Math.min(4, parent.relegation_size);
+  const topTable = await computeStandings(admin, parentId);
+  const lowerTable = await computeStandings(admin, child.id);
+  if (topTable.length === 0 || lowerTable.length === 0)
+    return { error: "Faltan jugadores clasificados." };
+
+  const relegated = topTable.slice(-n); // fondo de la superior
+  const promoted = lowerTable.slice(0, n); // top de la inferior
+
+  // Bajan: salen de la superior y entran a la inferior.
+  await admin
+    .from("league_members")
+    .delete()
+    .eq("league_id", parentId)
+    .in("user_id", relegated);
+  await admin
+    .from("league_members")
+    .upsert(relegated.map((uid) => ({ league_id: child.id, user_id: uid })));
+
+  // Suben: salen de la inferior y entran a la superior.
+  await admin
+    .from("league_members")
+    .delete()
+    .eq("league_id", child.id)
+    .in("user_id", promoted);
+  await admin
+    .from("league_members")
+    .upsert(promoted.map((uid) => ({ league_id: parentId, user_id: uid })));
+
+  await admin.from("leagues").update({ swapped: true }).eq("id", parentId);
+
+  revalidatePath(`/ligas/${parentId}`);
+  revalidatePath(`/ligas/${child.id}`);
+  return { ok: true };
+}
+
+/**
+ * Nueva temporada: borra el calendario y deja la liga en draft con los
+ * miembros actuales (ya con ascensos/descensos aplicados si correspondía).
+ */
+export async function resetSeason(leagueId: string): Promise<LeagueResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Debes iniciar sesión." };
+
+  const { data: league } = await supabase
+    .from("leagues")
+    .select("created_by, status")
+    .eq("id", leagueId)
+    .single();
+  if (!league || league.created_by !== user.id)
+    return { error: "Solo el organizador." };
+  if (league.status !== "finished")
+    return { error: "Solo se reinicia una liga terminada." };
+
+  const admin = createAdminClient();
+  await admin.from("league_matches").delete().eq("league_id", leagueId);
+  await admin
+    .from("leagues")
+    .update({ status: "draft", swapped: false })
+    .eq("id", leagueId);
+
+  revalidatePath(`/ligas/${leagueId}`);
+  revalidatePath("/ligas");
+  return { ok: true };
 }
