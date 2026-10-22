@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { AvatarForm } from "@/components/avatar-form";
 import { AchievementBadges } from "@/components/achievement-badges";
+import { TrophyCase } from "@/components/trophy-case";
 import type { Profile } from "@/types/database";
 
 function winRate(p: Profile) {
@@ -103,6 +104,8 @@ export default async function ProfilePage() {
           commends={(commends ?? []).length}
         />
       </div>
+
+      <TrophyCase userId={user.id} />
 
       <AvatarForm />
 

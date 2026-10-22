@@ -390,7 +390,7 @@ export async function finishLeague(leagueId: string): Promise<void> {
 // ---------- Divisiones: ascenso y descenso ----------
 
 /** Clasificación ordenada (puntos, diferencia, goles a favor). */
-async function computeStandings(
+export async function computeStandings(
   admin: ReturnType<typeof createAdminClient>,
   leagueId: string
 ): Promise<string[]> {

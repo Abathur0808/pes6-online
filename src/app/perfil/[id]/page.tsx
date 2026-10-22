@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { AddFriendButton } from "@/components/add-friend-button";
 import { AchievementBadges } from "@/components/achievement-badges";
+import { TrophyCase } from "@/components/trophy-case";
 import type { Profile } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -131,6 +132,8 @@ export default async function PublicProfilePage({
           commends={totalCommends}
         />
       </div>
+
+      <TrophyCase userId={id} />
     </div>
   );
 }

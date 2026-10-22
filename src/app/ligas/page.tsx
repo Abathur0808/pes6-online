@@ -43,6 +43,54 @@ export default async function LigasPage() {
         tabla se actualiza sola. Públicas para todos.
       </p>
 
+      {/* Cómo funciona — reglas y llamado a la responsabilidad */}
+      <section className="mt-6 grid gap-4 rounded-lg border border-carbon-700 bg-carbon-800 p-5 md:grid-cols-2">
+        <div>
+          <h2 className="font-sport text-sm font-bold uppercase tracking-wider text-pitch-light">
+            📋 Cómo funciona
+          </h2>
+          <ul className="mt-3 space-y-1.5 text-xs text-neutral-400">
+            <li>
+              <span className="text-neutral-200">1.</span> Inscríbete mientras
+              la liga esté abierta — hay aforo limitado.
+            </li>
+            <li>
+              <span className="text-neutral-200">2.</span> El organizador genera
+              el calendario: todos contra todos por jornadas.
+            </li>
+            <li>
+              <span className="text-neutral-200">3.</span> Pacta fecha con tu
+              rival, juega y reporta el marcador (puedes adjuntar 📷 captura).
+            </li>
+            <li>
+              <span className="text-neutral-200">4.</span> Tu rival confirma el
+              resultado y la tabla se actualiza sola.
+            </li>
+            <li>
+              <span className="text-neutral-200">5.</span> Si la liga tiene
+              división de ascenso: al terminar, los últimos bajan y los mejores
+              de la división inferior suben.
+            </li>
+          </ul>
+        </div>
+        <div className="border-t border-carbon-700 pt-4 md:border-l md:border-t-0 md:pl-5 md:pt-0">
+          <h2 className="font-sport text-sm font-bold uppercase tracking-wider text-gold">
+            ⚠️ Llamado a la responsabilidad
+          </h2>
+          <p className="mt-3 text-xs leading-relaxed text-neutral-400">
+            Una liga es un compromiso: si no juegas tus partidos, dañas la
+            experiencia de todos. Preséntate a tiempo, pacta tus fechas y
+            confirma resultados honestos.
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-neutral-300">
+            Tómatela en serio — <span className="text-gold">pronto podrían
+            venir sorpresas</span>: clasificación a torneos, trofeos y
+            condecoraciones como en el fútbol real. Tu historial de ligas ya
+            queda en tu vitrina de trofeos.
+          </p>
+        </div>
+      </section>
+
       {leagues.length === 0 ? (
         <div className="mt-8 rounded-lg border border-carbon-700 bg-carbon-800 p-8 text-center text-neutral-500">
           <p className="uppercase tracking-wider">
