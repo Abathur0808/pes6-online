@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { confirmScore, reportScore } from "@/lib/leagues/actions";
+import {
+  awardWin,
+  confirmScore,
+  reportScore,
+  setMatchDate,
+} from "@/lib/leagues/actions";
 
 /** Formulario para reportar el marcador de un partido de liga. */
 export function ReportScoreForm({
@@ -79,5 +84,94 @@ export function ConfirmScoreButton({ matchId }: { matchId: string }) {
     >
       {pending ? "…" : "Confirmar"}
     </button>
+  );
+}
+
+/** Fijar la fecha/hora pactada del partido (jugadores u organizador). */
+export function SetDateForm({ matchId }: { matchId: string }) {
+  const [value, setValue] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!value) return;
+    start(async () => {
+      const res = await setMatchDate(matchId, value);
+      if (res.error) setError(res.error);
+    });
+  }
+
+  return (
+    <form onSubmit={submit} className="flex items-center gap-2">
+      <input
+        type="datetime-local"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        className="rounded border border-carbon-600 bg-carbon-900 px-2 py-1 text-xs text-neutral-200 outline-none focus:border-pitch"
+      />
+      <button
+        type="submit"
+        disabled={pending || !value}
+        className="rounded border border-sky-400/50 px-2 py-1 text-xs font-semibold uppercase tracking-wider text-sky-300 transition hover:bg-sky-400/10 disabled:opacity-50"
+      >
+        {pending ? "…" : "Agendar"}
+      </button>
+      {error && <span className="text-xs text-red-400">{error}</span>}
+    </form>
+  );
+}
+
+/** Botones del organizador para dar la victoria por no presentarse (3-0). */
+export function AwardWinButtons({
+  matchId,
+  homeId,
+  homeName,
+  awayId,
+  awayName,
+}: {
+  matchId: string;
+  homeId: string;
+  homeName: string;
+  awayId: string;
+  awayName: string;
+}) {
+  const [pending, start] = useTransition();
+
+  function award(winnerId: string, winnerName: string) {
+    if (
+      !window.confirm(
+        `¿Victoria por no presentarse para ${winnerName}? Quedará 3-0.`
+      )
+    )
+      return;
+    start(async () => {
+      await awardWin(matchId, winnerId);
+    });
+  }
+
+  return (
+    <div
+      className="flex items-center gap-1"
+      title="Victoria por no presentarse (3-0)"
+    >
+      <span className="text-[10px] uppercase tracking-wider text-neutral-500">
+        WO:
+      </span>
+      <button
+        onClick={() => award(homeId, homeName)}
+        disabled={pending}
+        className="rounded border border-red-800/60 px-2 py-0.5 text-[10px] uppercase tracking-wider text-red-400 transition hover:bg-red-950 disabled:opacity-50"
+      >
+        {homeName}
+      </button>
+      <button
+        onClick={() => award(awayId, awayName)}
+        disabled={pending}
+        className="rounded border border-red-800/60 px-2 py-0.5 text-[10px] uppercase tracking-wider text-red-400 transition hover:bg-red-950 disabled:opacity-50"
+      >
+        {awayName}
+      </button>
+    </div>
   );
 }

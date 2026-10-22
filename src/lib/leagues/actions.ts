@@ -256,6 +256,92 @@ export async function ownerSetScore(
   revalidatePath(`/ligas/${match.league_id}`);
 }
 
+/**
+ * Fija la fecha/hora del partido. Puede hacerlo el organizador o
+ * cualquiera de los dos jugadores (se usa para acordar la fecha).
+ */
+export async function setMatchDate(
+  matchId: string,
+  isoDate: string
+): Promise<LeagueResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Debes iniciar sesión." };
+  if (!isoDate || isNaN(Date.parse(isoDate)))
+    return { error: "Fecha inválida." };
+
+  const { data: match } = await supabase
+    .from("league_matches")
+    .select(
+      "league_id, home_user_id, away_user_id, status, league:leagues(created_by)"
+    )
+    .eq("id", matchId)
+    .single();
+  const league = match?.league as unknown as { created_by: string } | null;
+  const isParticipant =
+    match?.home_user_id === user.id || match?.away_user_id === user.id;
+  const isOwner = league?.created_by === user.id;
+  if (!match || (!isParticipant && !isOwner))
+    return { error: "Sin permiso sobre este partido." };
+  if (match.status !== "scheduled")
+    return { error: "Solo se puede agendar antes de jugarlo." };
+
+  await supabase
+    .from("league_matches")
+    .update({ scheduled_at: new Date(isoDate).toISOString() })
+    .eq("id", matchId);
+
+  revalidatePath(`/ligas/${match.league_id}`);
+  return { ok: true };
+}
+
+/**
+ * Victoria por no presentarse (WO): el organizador le da el partido 3-0
+ * al jugador que sí se presentó. Estándar del fútbol.
+ */
+export async function awardWin(
+  matchId: string,
+  winnerId: string
+): Promise<LeagueResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Debes iniciar sesión." };
+
+  const { data: match } = await supabase
+    .from("league_matches")
+    .select(
+      "league_id, home_user_id, away_user_id, status, league:leagues(created_by)"
+    )
+    .eq("id", matchId)
+    .single();
+  const league = match?.league as unknown as { created_by: string } | null;
+  if (!match || league?.created_by !== user.id)
+    return { error: "Solo el organizador puede dar victorias por default." };
+  if (match.status === "played" || match.status === "cancelled")
+    return { error: "Este partido ya está cerrado." };
+
+  const homeWon = winnerId === match.home_user_id;
+  const awayWon = winnerId === match.away_user_id;
+  if (!homeWon && !awayWon) return { error: "El ganador no juega aquí." };
+
+  await supabase
+    .from("league_matches")
+    .update({
+      home_score: homeWon ? 3 : 0,
+      away_score: awayWon ? 3 : 0,
+      reported_by: user.id,
+      status: "played",
+    })
+    .eq("id", matchId);
+
+  revalidatePath(`/ligas/${match.league_id}`);
+  return { ok: true };
+}
+
 export async function finishLeague(leagueId: string): Promise<void> {
   const supabase = await createClient();
   const {

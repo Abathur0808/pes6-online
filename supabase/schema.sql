@@ -372,6 +372,9 @@ create table if not exists public.league_matches (
   check (home_user_id <> away_user_id)
 );
 
+alter table public.league_matches
+  add column if not exists scheduled_at timestamptz;
+
 create index if not exists league_matches_league
   on public.league_matches (league_id, matchday);
 

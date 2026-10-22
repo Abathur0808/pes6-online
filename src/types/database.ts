@@ -132,6 +132,8 @@ export interface LeagueMatch {
   away_score: number | null;
   status: LeagueMatchStatus;
   reported_by: string | null;
+  /** Fecha/hora pactada para jugar (null = sin acordar). */
+  scheduled_at?: string | null;
   home?: Profile;
   away?: Profile;
 }

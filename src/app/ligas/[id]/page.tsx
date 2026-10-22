@@ -8,8 +8,10 @@ import {
   LeaveLeagueButton,
 } from "@/components/league-buttons";
 import {
+  AwardWinButtons,
   ConfirmScoreButton,
   ReportScoreForm,
+  SetDateForm,
 } from "@/components/league-match-actions";
 import type { League, LeagueMatch, LeagueMember } from "@/types/database";
 
@@ -273,7 +275,22 @@ export default async function LigaDetailPage({
                             </span>
                           )}
                         </div>
-                        <div>
+                        {m.scheduled_at && (
+                          <p className="mt-1 text-xs text-neutral-500">
+                            🗓{" "}
+                            {new Date(m.scheduled_at).toLocaleString("es", {
+                              day: "numeric",
+                              month: "short",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        )}
+                        <div className="flex flex-wrap items-center gap-2">
+                          {m.status === "scheduled" &&
+                            (isParticipant || isOwner) && (
+                              <SetDateForm matchId={m.id} />
+                            )}
                           {isParticipant &&
                             (m.status === "scheduled" ||
                               (m.status === "pending_confirm" &&
@@ -287,6 +304,17 @@ export default async function LigaDetailPage({
                           {isParticipant && waitingMe && (
                             <ConfirmScoreButton matchId={m.id} />
                           )}
+                          {isOwner &&
+                            (m.status === "scheduled" ||
+                              m.status === "pending_confirm") && (
+                              <AwardWinButtons
+                                matchId={m.id}
+                                homeId={m.home_user_id}
+                                homeName={m.home?.username ?? "Local"}
+                                awayId={m.away_user_id}
+                                awayName={m.away?.username ?? "Visita"}
+                              />
+                            )}
                         </div>
                       </li>
                     );
