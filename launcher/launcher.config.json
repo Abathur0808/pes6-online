@@ -4,7 +4,7 @@
   "gateHost": "pes6gate-ec.winning-eleven.net",
   "stunHost": "we9stun.winning-eleven.net",
   "selectedServer": "PES6Club",
-  "serversUrl": "https://pes6-online.vercel.app/api/launcher-config",
+  "serversUrl": "https://onlinepech.vercel.app/api/launcher-config",
   "servers": [
     {
       "name": "PES6Club",
