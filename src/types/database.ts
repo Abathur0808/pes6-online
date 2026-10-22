@@ -68,6 +68,26 @@ export interface RoomMessage {
   profile?: Profile;
 }
 
+export interface Friendship {
+  id: string;
+  requester_id: string;
+  addressee_id: string;
+  status: "pending" | "accepted" | "rejected";
+  created_at: string;
+  requester?: Profile;
+  addressee?: Profile;
+}
+
+export type CommendTag = "fair_play" | "good_game" | "punctual";
+
+export interface Commend {
+  room_id: string;
+  from_id: string;
+  to_id: string;
+  tag: CommendTag;
+  created_at: string;
+}
+
 export interface Team {
   id: string;
   name: string;

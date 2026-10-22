@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/client";
 import { leaveRoom, setReady, setRoomStatus } from "@/lib/rooms/actions";
 import { ChatPanel } from "@/components/chat-panel";
 import { ReportAvatarButton } from "@/components/report-avatar-button";
+import { commendPlayer, sendFriendRequest } from "@/lib/friends/actions";
+import type { CommendTag } from "@/types/database";
 import {
   DEFAULT_SERVER,
   GATE_HOST,
@@ -28,6 +30,12 @@ const MODE_LABEL: Record<string, string> = {
   clan: "Duelo de clanes",
 };
 
+const COMMEND_LABELS: { tag: CommendTag; label: string }[] = [
+  { tag: "fair_play", label: "Juego limpio" },
+  { tag: "good_game", label: "Buen partido" },
+  { tag: "punctual", label: "Puntual" },
+];
+
 export function RoomPanel({
   room,
   members: initialMembers,
@@ -39,6 +47,8 @@ export function RoomPanel({
 }) {
   const [members, setMembers] = useState(initialMembers);
   const [status, setStatus] = useState(room.status);
+  const [friendSent, setFriendSent] = useState(false);
+  const [commendsSent, setCommendsSent] = useState<Set<string>>(new Set());
 
   const isMember = members.some((m) => m.user_id === currentUserId);
   const isHost = room.host_id === currentUserId;
@@ -157,6 +167,46 @@ export function RoomPanel({
                       reportedId={m.user_id}
                       username={m.profile.username}
                     />
+                  </div>
+                )}
+                {m.user_id !== currentUserId && currentUserId && (
+                  <div className="mt-3 space-y-2">
+                    <button
+                      onClick={async () => {
+                        const r = await sendFriendRequest(m.user_id);
+                        if (r.ok) setFriendSent(true);
+                      }}
+                      disabled={friendSent}
+                      className="text-xs font-semibold uppercase tracking-wider text-sky-300 hover:text-sky-200 disabled:opacity-50"
+                    >
+                      {friendSent ? "Solicitud enviada ✓" : "+ Añadir amigo"}
+                    </button>
+                    <div className="flex flex-wrap justify-center gap-1">
+                      {COMMEND_LABELS.map((c) => {
+                        const key = `${m.user_id}:${c.tag}`;
+                        const done = commendsSent.has(key);
+                        return (
+                          <button
+                            key={c.tag}
+                            onClick={async () => {
+                              const r = await commendPlayer(
+                                room.id,
+                                m.user_id,
+                                c.tag
+                              );
+                              if (r.ok)
+                                setCommendsSent(
+                                  (s) => new Set(s).add(key)
+                                );
+                            }}
+                            disabled={done}
+                            className="rounded border border-gold/40 px-2 py-0.5 text-[10px] uppercase tracking-wider text-gold transition hover:bg-gold/10 disabled:opacity-40"
+                          >
+                            {done ? `${c.label} ✓` : c.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </>

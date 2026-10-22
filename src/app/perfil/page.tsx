@@ -23,6 +23,14 @@ export default async function ProfilePage() {
     .eq("id", user.id)
     .single<Profile>();
 
+  // Elogios recibidos (solo de compañeros de sala verificados).
+  const { data: commends } = await supabase
+    .from("commends")
+    .select("tag")
+    .eq("to_id", user.id);
+  const commendCount = (tag: string) =>
+    (commends ?? []).filter((c: { tag: string }) => c.tag === tag).length;
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-12">
       <div className="flex items-center gap-4">
@@ -71,6 +79,21 @@ export default async function ProfilePage() {
             </p>
           </div>
         ))}
+      </div>
+
+      {/* Reputación — solo elogios verificados, nunca negativos */}
+      <div className="mt-6 rounded-lg border border-gold/30 bg-gold/5 p-5">
+        <h2 className="font-sport text-sm font-semibold uppercase tracking-wider text-gold">
+          Reputación
+        </h2>
+        <div className="mt-3 flex flex-wrap gap-4 text-sm text-neutral-300">
+          <span>🤝 Juego limpio: <strong>{commendCount("fair_play")}</strong></span>
+          <span>⚽ Buen partido: <strong>{commendCount("good_game")}</strong></span>
+          <span>🕐 Puntual: <strong>{commendCount("punctual")}</strong></span>
+        </div>
+        <p className="mt-2 text-xs text-neutral-500">
+          Solo pueden elogiarte jugadores que compartieron sala contigo.
+        </p>
       </div>
 
       <AvatarForm />

@@ -3,6 +3,7 @@ import { AuthButton } from "@/components/auth-button";
 
 const links = [
   { href: "/salas", label: "Salas" },
+  { href: "/amigos", label: "Amigos" },
   { href: "/modos", label: "Modos" },
   { href: "/equipos", label: "Equipos" },
   { href: "/ranking", label: "Ranking" },
