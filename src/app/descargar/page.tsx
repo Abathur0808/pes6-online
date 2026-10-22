@@ -1,5 +1,9 @@
 import Link from "next/link";
 
+// TODO: pegar aquí el enlace directo de MediaFire cuando esté subido.
+// Ejemplo: "https://www.mediafire.com/file/XXXXXXX/pes6-launcher.zip/file"
+const MEDIAFIRE_URL = "";
+
 export default function DownloadPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
@@ -50,6 +54,37 @@ export default function DownloadPage() {
             El launcher te pedirá permisos de administrador para configurar la
             red y abrirá el juego. En la pantalla de Red escribe{" "}
             <code className="text-pitch-light">usuario-contraseña</code>.
+      {/* Mirrors alternativos */}
+      <section className="mt-10 rounded-lg border border-carbon-700 bg-carbon-800 p-5">
+        <h2 className="font-sport font-semibold uppercase tracking-wide text-pitch-light">
+          Descargas alternativas
+        </h2>
+        <p className="mt-1 text-sm text-neutral-400">
+          Si la descarga directa te da problemas, usa uno de los mirrors:
+        </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          {MEDIAFIRE_URL ? (
+            <a
+              href={MEDIAFIRE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block rounded border border-sky-400/50 bg-sky-400/10 px-6 py-2 font-sport uppercase tracking-wider text-sky-300 transition hover:bg-sky-400/20"
+            >
+              MediaFire ↗
+            </a>
+          ) : (
+            <span className="inline-block rounded border border-carbon-600 px-6 py-2 font-sport uppercase tracking-wider text-neutral-500">
+              MediaFire — disponible en breve
+            </span>
+          )}
+        </div>
+        <p className="mt-3 text-xs text-neutral-500">
+          Mismo contenido que el zip oficial: launcher .exe + configuración +
+          código fuente auditable. Verifica que el archivo se llame{" "}
+          <code>pes6-launcher.zip</code>.
+        </p>
+      </section>
+
           </p>
         </li>
       </ol>
