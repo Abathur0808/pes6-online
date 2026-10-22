@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { AvatarForm } from "@/components/avatar-form";
 import type { Profile } from "@/types/database";
 
 function winRate(p: Profile) {
@@ -25,9 +26,18 @@ export default async function ProfilePage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-12">
       <div className="flex items-center gap-4">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-pitch font-sport text-2xl font-bold text-carbon-950">
-          {(profile?.username ?? user.email ?? "?")[0].toUpperCase()}
-        </div>
+        {profile?.avatar_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={profile.avatar_url}
+            alt={profile.username}
+            className="h-16 w-16 rounded-full border border-carbon-600 object-cover"
+          />
+        ) : (
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-pitch font-sport text-2xl font-bold text-carbon-950">
+            {(profile?.username ?? user.email ?? "?")[0].toUpperCase()}
+          </div>
+        )}
         <div>
           <h1 className="font-sport text-3xl font-bold uppercase tracking-wide">
             {profile?.username ?? user.email}
@@ -62,6 +72,8 @@ export default async function ProfilePage() {
           </div>
         ))}
       </div>
+
+      <AvatarForm />
 
       <p className="mt-6 text-sm text-neutral-500">
         Ranking competitivo: pendiente de activar cuando los resultados se

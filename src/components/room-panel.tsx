@@ -125,9 +125,18 @@ export function RoomPanel({
           >
             {m ? (
               <>
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-pitch font-sport text-xl font-bold text-carbon-950">
-                  {(m.profile?.username ?? "?")[0].toUpperCase()}
-                </div>
+                {m.profile?.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={m.profile.avatar_url}
+                    alt={m.profile.username}
+                    className="mx-auto h-14 w-14 rounded-full border border-carbon-600 object-cover"
+                  />
+                ) : (
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-pitch font-sport text-xl font-bold text-carbon-950">
+                    {(m.profile?.username ?? "?")[0].toUpperCase()}
+                  </div>
+                )}
                 <p className="mt-3 font-sport text-xl font-semibold uppercase">
                   {m.profile?.username ?? "Jugador"}
                 </p>
