@@ -1,0 +1,105 @@
+"use client";
+
+import { useActionState } from "react";
+import { createRoom, type RoomActionResult } from "@/lib/rooms/actions";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
+
+const initial: RoomActionResult = {};
+
+export default function NewRoomPage() {
+  const [state, formAction, pending] = useActionState(createRoom, initial);
+
+  if (!isSupabaseConfigured()) {
+    return (
+      <div className="mx-auto max-w-md px-4 py-20 text-center text-neutral-400">
+        <h1 className="font-sport text-3xl font-bold uppercase text-neutral-200">
+          Crear sala
+        </h1>
+        <p className="mt-4">
+          Requiere Supabase configurado y sesión iniciada.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-md px-4 py-20">
+      <h1 className="text-center font-sport text-3xl font-bold uppercase tracking-wide">
+        Nueva <span className="text-pitch">sala</span>
+      </h1>
+
+      <form
+        action={formAction}
+        className="mt-8 space-y-4 rounded-lg border border-carbon-700 bg-carbon-800 p-6"
+      >
+        <label className="block text-sm uppercase tracking-wide text-neutral-400">
+          Nombre de la sala
+          <input
+            name="name"
+            type="text"
+            required
+            maxLength={60}
+            placeholder="Clásico del domingo"
+            className="mt-1 w-full rounded border border-carbon-600 bg-carbon-900 px-3 py-2 text-neutral-200 outline-none focus:border-pitch"
+          />
+        </label>
+
+        <label className="block text-sm uppercase tracking-wide text-neutral-400">
+          Parche / roster requerido
+          <select
+            name="patch"
+            defaultValue=""
+            className="mt-1 w-full rounded border border-carbon-600 bg-carbon-900 px-3 py-2 text-neutral-200 outline-none focus:border-pitch"
+          >
+            <option value="">Cualquiera / sin parche</option>
+            <option value="PECH Classic Patch">PECH Classic Patch</option>
+            <option value="Original (sin parche)">Original (sin parche)</option>
+            <option value="Otro">Otro (acordar con el rival)</option>
+          </select>
+        </label>
+        <p className="text-xs text-neutral-500">
+          Ambos jugadores deben tener el mismo parche o el partido
+          desincroniza.
+        </p>
+
+        <label className="block text-sm uppercase tracking-wide text-neutral-400">
+          Duración del partido
+          <select
+            name="match_length"
+            defaultValue="10"
+            className="mt-1 w-full rounded border border-carbon-600 bg-carbon-900 px-3 py-2 text-neutral-200 outline-none focus:border-pitch"
+          >
+            {[5, 10, 15, 20, 30].map((m) => (
+              <option key={m} value={m}>
+                {m} minutos
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {state.error && (
+          <p className="rounded border border-red-800 bg-red-950/50 px-3 py-2 text-sm text-red-300">
+            {state.error}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={pending}
+          className="w-full rounded bg-pitch py-2.5 font-sport font-bold uppercase tracking-wider text-carbon-950 transition hover:bg-pitch-light disabled:opacity-50"
+        >
+          {pending ? "Creando…" : "Crear sala"}
+        </button>
+      </form>
+
+      <p className="mt-4 text-center text-sm text-neutral-500">
+        La sala coordina a los jugadores. El partido se juega con tu copia de
+        PES 6 — ver{" "}
+        <a href="/como-jugar" className="text-pitch-light underline">
+          cómo jugar
+        </a>
+        .
+      </p>
+    </div>
+  );
+}
