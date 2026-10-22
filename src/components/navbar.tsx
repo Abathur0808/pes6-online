@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AuthButton } from "@/components/auth-button";
+import { NotificationBell } from "@/components/notification-bell";
 
 const links = [
   { href: "/salas", label: "Salas" },
@@ -36,8 +37,10 @@ export function Navbar() {
             </Link>
           ))}
         </div>
-
-        <AuthButton />
+        <div className="flex items-center gap-4">
+          <NotificationBell />
+          <AuthButton />
+        </div>
       </nav>
     </header>
   );
