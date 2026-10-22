@@ -14,6 +14,12 @@ const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
   finished: { label: "Finalizada", cls: "text-neutral-500 border-carbon-600" },
 };
 
+const MODE_LABEL: Record<string, string> = {
+  "1v1": "1v1",
+  coop: "Co-op",
+  clan: "Clanes",
+};
+
 export default async function RoomsPage() {
   const configured = isSupabaseConfigured();
   let rooms: Room[] = [];
@@ -33,7 +39,7 @@ export default async function RoomsPage() {
     <div className="mx-auto max-w-6xl px-4 py-12">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="font-sport text-3xl font-bold uppercase tracking-wide">
-          Salas <span className="text-pitch">1v1</span>
+          Salas <span className="text-pitch">abiertas</span>
         </h1>
         <Link
           href="/salas/nueva"
@@ -83,6 +89,9 @@ export default async function RoomsPage() {
                     <span className="scoreboard text-pitch-light">
                       {room.code}
                     </span>
+                  </p>
+                  <p className="mt-1 text-xs uppercase tracking-wider text-sky-300">
+                    Modo: {MODE_LABEL[room.match_settings?.mode ?? "1v1"]}
                   </p>
                   {room.match_settings?.patch && (
                     <p className="mt-1 text-xs uppercase tracking-wider text-gold">

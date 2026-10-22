@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { leaveRoom, setReady, setRoomStatus } from "@/lib/rooms/actions";
+import { ChatPanel } from "@/components/chat-panel";
 import type { Room, RoomMember } from "@/types/database";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -11,6 +12,12 @@ const STATUS_LABEL: Record<string, string> = {
   connecting: "Conectando",
   in_game: "En partida",
   finished: "Finalizada",
+};
+
+const MODE_LABEL: Record<string, string> = {
+  "1v1": "1v1",
+  coop: "Co-op",
+  clan: "Duelo de clanes",
 };
 
 export function RoomPanel({
@@ -127,7 +134,11 @@ export function RoomPanel({
             <p className="text-xs uppercase tracking-wider text-neutral-500">
               Código de invitación
             </p>
-            <p className="scoreboard font-sport text-2xl font-bold text-gold">
+          Modo:{" "}
+          <span className="text-sky-300">
+            {MODE_LABEL[room.match_settings?.mode ?? "1v1"]}
+          </span>
+          {" · "}  <p className="scoreboard font-sport text-2xl font-bold text-gold">
               {room.code}
             </p>
           </div>
@@ -155,6 +166,11 @@ export function RoomPanel({
         esta sala coordina jugadores y condiciones. El lanzamiento automático
         del partido está pendiente — ver documento de viabilidad técnica.
       </div>
+
+      {/* Chat — aparece cuando la sala esta completa y eres miembro */}
+      {isMember && members.length >= 2 && currentUserId && (
+        <ChatPanel roomId={room.id} currentUserId={currentUserId} />
+      )}
 
       {/* Acciones */}
       {isMember && (

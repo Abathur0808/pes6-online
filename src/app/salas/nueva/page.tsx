@@ -45,6 +45,28 @@ export default function NewRoomPage() {
         </label>
 
         <label className="block text-sm uppercase tracking-wide text-neutral-400">
+          Modo de juego
+          <select
+            name="mode"
+            defaultValue="1v1"
+            className="mt-1 w-full rounded border border-carbon-600 bg-carbon-900 px-3 py-2 text-neutral-200 outline-none focus:border-pitch"
+          >
+            <option value="1v1">1v1 — duelo clásico</option>
+            <option value="coop">Co-op — varios jugadores en un mismo PC</option>
+            <option value="clan">Duelo de clanes — serie de 1v1 por equipo</option>
+          </select>
+        </label>
+        <p className="text-xs text-neutral-500">
+          El netcode de PES 6 es 1v1: en co-op y clanes la sala coordina a tu
+          equipo y el partido se juega como 1v1 (o co-op local con mandos
+          extra). Ver{" "}
+          <a href="/modos" className="text-pitch-light underline">
+            modos de juego
+          </a>
+          .
+        </p>
+
+        <label className="block text-sm uppercase tracking-wide text-neutral-400">
           Parche / roster requerido
           <select
             name="patch"

@@ -3,10 +3,10 @@ import { ServiceStatus } from "@/components/service-status";
 
 const features = [
   {
-    title: "Salas 1v1",
-    desc: "Crea una sala, comparte el código y coordina el partido con tu rival.",
-    href: "/salas",
-    cta: "Ver salas",
+    title: "Salas y modos",
+    desc: "1v1, co-op local y duelo de clanes. Crea una sala y comparte el código.",
+    href: "/modos",
+    cta: "Ver modos",
   },
   {
     title: "Equipos clásicos",

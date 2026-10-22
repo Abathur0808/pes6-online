@@ -8,6 +8,14 @@ export type RoomStatus =
 
 export type RoomRole = "host" | "guest";
 
+/** Modo de juego de la sala.
+ * - "1v1": duelo clásico (default)
+ * - "coop": varios jugadores en el mismo PC (mandos extra) vs rival online
+ * - "clan": duelo de clanes — serie de 1v1 sumando puntos por equipo
+ * El netcode de PES 6 online es estrictamente 1v1: los modos por equipos
+ * se coordinan desde la web y se juegan como 1v1 o co-op local. */
+export type RoomMode = "1v1" | "coop" | "clan";
+
 export interface Profile {
   id: string;
   username: string;
@@ -31,6 +39,8 @@ export interface Room {
     conditions?: string;
     /** Parche/roster requerido — ambos jugadores deben tener el mismo. */
     patch?: string;
+    /** Modo de juego (por defecto "1v1"). */
+    mode?: RoomMode;
   };
   created_at: string;
   updated_at: string;
@@ -42,6 +52,15 @@ export interface RoomMember {
   role: RoomRole;
   ready: boolean;
   joined_at: string;
+  profile?: Profile;
+}
+
+export interface RoomMessage {
+  id: number;
+  room_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
   profile?: Profile;
 }
 
