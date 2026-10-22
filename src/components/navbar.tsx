@@ -4,6 +4,7 @@ import { NotificationBell } from "@/components/notification-bell";
 
 const links = [
   { href: "/salas", label: "Salas" },
+  { href: "/buscar", label: "Buscar rival" },
   { href: "/amigos", label: "Amigos" },
   { href: "/modos", label: "Modos" },
   { href: "/ligas", label: "Ligas" },
