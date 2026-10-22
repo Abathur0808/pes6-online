@@ -1,6 +1,6 @@
 export function Footer() {
   return (
-    <footer className="border-t border-carbon-700 bg-carbon-900 py-6">
+    <footer className="border-t border-carbon-700 bg-carbon-900 pb-6 pt-6 safe-area-b">
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-4 text-center text-xs text-neutral-500">
         <p className="uppercase tracking-wider">
           PES6 Online — Proyecto comunitario sin afiliación a Konami

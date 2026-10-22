@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Oswald } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/navbar";
@@ -15,6 +15,14 @@ export const metadata: Metadata = {
   title: "PES 6 Online — Fútbol retro multijugador",
   description:
     "Plataforma comunitaria para jugar Pro Evolution Soccer 6 online: salas, perfiles, equipos clásicos y torneos.",
+};
+
+/** Móvil: ancho real del dispositivo, respetando notches (safe-area). */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0a0a0b",
 };
 
 export default function RootLayout({

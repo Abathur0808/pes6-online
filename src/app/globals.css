@@ -42,3 +42,54 @@ body {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.08em;
 }
+
+/* =================== Optimización móvil =================== */
+
+/* Evita que Safari/Chrome móvil inflen el texto al girar a horizontal. */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Nada puede desbordar la página entera en móvil (los elementos anchos
+   ya llevan overflow-x-auto propio: tablas de liga, brackets). */
+body {
+  overflow-x: clip;
+}
+
+/* Taps instantáneos, sin la pausa de 300ms de los navegadores antiguos. */
+a,
+button,
+input,
+select,
+textarea,
+label {
+  touch-action: manipulation;
+}
+
+/* Inputs con letra ≥16px: evita el auto-zoom al enfocar en iOS Safari. */
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* Safe-area para móviles con notch (viewport-fit=cover). */
+.safe-area-x {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+.safe-area-t {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-area-b {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Scroll suave con inercia en los paneles desplazables de iOS antiguo. */
+.overflow-x-auto,
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+}
