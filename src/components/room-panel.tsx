@@ -126,7 +126,13 @@ export function RoomPanel({
     <div className="space-y-6">
       {/* Slots de jugadores estilo marcador */}
       <div
-        className={`grid gap-4 ${cap > 2 ? "md:grid-cols-3" : "md:grid-cols-2"}`}
+        className={`grid gap-4 ${
+          cap > 8
+            ? "md:grid-cols-4"
+            : cap > 2
+              ? "md:grid-cols-3"
+              : "md:grid-cols-2"
+        }`}
       >
         {slots.map((m, i) => (
           <div

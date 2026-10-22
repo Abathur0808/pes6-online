@@ -109,7 +109,7 @@ export default function NewRoomPage() {
             defaultValue="2"
             className="mt-1 w-full rounded border border-carbon-600 bg-carbon-900 px-3 py-2 text-neutral-200 outline-none focus:border-pitch"
           >
-            {[2, 3, 4, 5, 6, 7, 8].map((n) => (
+            {[2, 3, 4, 5, 6, 8, 10, 12, 14, 16].map((n) => (
               <option key={n} value={n}>
                 {n} {n === 2 ? "(1v1)" : "jugadores"}
               </option>

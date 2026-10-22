@@ -31,10 +31,8 @@ export async function createRoom(
     ? (modeRaw as RoomMode)
     : "1v1";
   const server = String(formData.get("server") ?? DEFAULT_SERVER).trim();
-  const maxPlayers = Math.min(
-    8,
-    Math.max(2, Number(formData.get("max_players") ?? 2) || 2)
-  );
+  // Clamp a 16
+  const maxPlayers = Math.min(16, Math.max(2, Number(formData.get("max_players")) || 2));
 
   if (!name || name.length > 60) {
     return { error: "El nombre de la sala es obligatorio (máx. 60 caracteres)." };

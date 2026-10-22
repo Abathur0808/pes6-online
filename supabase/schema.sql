@@ -319,7 +319,7 @@ create policy "commends_insert_verified" on public.commends
 -- ---------- Salas multi-jugador + Ligas ----------
 alter table public.rooms
   add column if not exists max_players integer not null default 2
-    check (max_players between 2 and 8);
+    check (max_players between 2 and 16);
 
 create or replace function public.enforce_room_capacity()
 returns trigger
