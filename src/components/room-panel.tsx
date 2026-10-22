@@ -4,6 +4,13 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { leaveRoom, setReady, setRoomStatus } from "@/lib/rooms/actions";
 import { ChatPanel } from "@/components/chat-panel";
+import {
+  DEFAULT_SERVER,
+  GATE_HOST,
+  LAUNCHER_SERVERS_URL,
+  SERVERS,
+  STUN_HOST,
+} from "@/lib/servers";
 import type { Room, RoomMember } from "@/types/database";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -35,6 +42,31 @@ export function RoomPanel({
   const isMember = members.some((m) => m.user_id === currentUserId);
   const isHost = room.host_id === currentUserId;
   const me = members.find((m) => m.user_id === currentUserId);
+
+  const serverName = room.match_settings?.server ?? DEFAULT_SERVER;
+  const serverPreset = SERVERS.find((s) => s.name === serverName);
+
+  // Genera un launcher.config.json listo para poner junto al .exe.
+  function downloadConfig() {
+    const cfg = {
+      gameDir: "", // cada jugador elige su ruta al abrir el launcher
+      exeCandidates: ["PECHCP.exe", "PES6.exe"],
+      gateHost: GATE_HOST,
+      stunHost: STUN_HOST,
+      selectedServer: serverName,
+      serversUrl: LAUNCHER_SERVERS_URL,
+      servers: SERVERS,
+    };
+    const blob = new Blob([JSON.stringify(cfg, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "launcher.config.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   // Realtime: refrescar cuando cambian miembros o estado de la sala.
   useEffect(() => {
@@ -159,6 +191,50 @@ export function RoomPanel({
           ).
         </p>
       </div>
+
+      {/* Conexión — servidor acordado + config descargable */}
+      {isMember && (
+        <div className="rounded-lg border border-sky-400/30 bg-sky-400/5 p-5">
+          <h3 className="font-sport text-sm font-semibold uppercase tracking-wider text-sky-300">
+            Conexión — {serverName}
+          </h3>
+          {serverPreset && serverPreset.gateIp ? (
+            <p className="mt-2 text-sm text-neutral-400">
+              Gate <code className="text-neutral-200">{serverPreset.gateIp}</code>
+              {" · "}
+              STUN{" "}
+              <code className="text-neutral-200">{serverPreset.stunIp}</code>
+              {serverPreset.signupUrl && (
+                <>
+                  {" · "}
+                  <a
+                    href={serverPreset.signupUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-pitch-light underline"
+                  >
+                    crear cuenta
+                  </a>
+                </>
+              )}
+            </p>
+          ) : (
+            <p className="mt-2 text-sm text-neutral-400">
+              Servidor personalizado — acordad las IPs por el chat.
+            </p>
+          )}
+          <p className="mt-2 text-xs text-neutral-500">
+            Descarga la config, ponla junto a PES6-Launcher.exe y el launcher
+            arrancará con este servidor seleccionado.
+          </p>
+          <button
+            onClick={downloadConfig}
+            className="mt-3 rounded border border-sky-400/50 bg-sky-400/10 px-4 py-2 text-sm font-semibold uppercase tracking-wider text-sky-300 transition hover:bg-sky-400/20"
+          >
+            Descargar launcher.config.json
+          </button>
+        </div>
+      )}
 
       {/* Aviso honesto */}
       <div className="rounded-lg border border-sky-400/30 bg-sky-400/5 p-4 text-sm text-neutral-400">

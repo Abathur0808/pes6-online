@@ -85,6 +85,24 @@ export default function NewRoomPage() {
         </p>
 
         <label className="block text-sm uppercase tracking-wide text-neutral-400">
+          Servidor de red
+          <select
+            name="server"
+            defaultValue="PES6Club"
+            className="mt-1 w-full rounded border border-carbon-600 bg-carbon-900 px-3 py-2 text-neutral-200 outline-none focus:border-pitch"
+          >
+            <option value="PES6Club">PES6Club (recomendado)</option>
+            <option value="Personalizado">
+              Personalizado — acordar IPs por el chat
+            </option>
+          </select>
+        </label>
+        <p className="text-xs text-neutral-500">
+          Ambos jugadores conectan al mismo servidor. La sala genera un{" "}
+          <code>launcher.config.json</code> listo para el launcher.
+        </p>
+
+        <label className="block text-sm uppercase tracking-wide text-neutral-400">
           Duración del partido
           <select
             name="match_length"

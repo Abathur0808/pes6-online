@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { DEFAULT_SERVER } from "@/lib/servers";
 import type { RoomMode, RoomStatus } from "@/types/database";
 
 export interface RoomActionResult {
@@ -29,6 +30,7 @@ export async function createRoom(
   const mode: RoomMode = ["1v1", "coop", "clan"].includes(modeRaw)
     ? (modeRaw as RoomMode)
     : "1v1";
+  const server = String(formData.get("server") ?? DEFAULT_SERVER).trim();
 
   if (!name || name.length > 60) {
     return { error: "El nombre de la sala es obligatorio (máx. 60 caracteres)." };
@@ -47,7 +49,7 @@ export async function createRoom(
       code: generateCode(),
       host_id: user.id,
       status: "waiting" satisfies RoomStatus,
-      match_settings: { match_length: matchLength, patch, mode },
+      match_settings: { match_length: matchLength, patch, mode, server },
     })
     .select("id, code")
     .single();

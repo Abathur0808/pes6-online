@@ -41,6 +41,8 @@ export interface Room {
     patch?: string;
     /** Modo de juego (por defecto "1v1"). */
     mode?: RoomMode;
+    /** Servidor de red acordado para el partido (nombre del preset). */
+    server?: string;
   };
   created_at: string;
   updated_at: string;
