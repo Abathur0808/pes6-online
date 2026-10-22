@@ -24,9 +24,12 @@ create unique index if not exists challenges_pending_pair
 
 alter table public.challenges enable row level security;
 
+drop policy if exists "challenges_read" on public.challenges;
 create policy "challenges_read" on public.challenges
   for select using (auth.uid() in (challenger_id, challenged_id));
+drop policy if exists "challenges_insert" on public.challenges;
 create policy "challenges_insert" on public.challenges
   for insert with check (auth.uid() = challenger_id);
+drop policy if exists "challenges_update" on public.challenges;
 create policy "challenges_update" on public.challenges
   for update using (auth.uid() in (challenger_id, challenged_id));

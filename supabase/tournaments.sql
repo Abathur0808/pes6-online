@@ -50,13 +50,18 @@ alter table public.tournaments enable row level security;
 alter table public.tournament_members enable row level security;
 alter table public.tournament_matches enable row level security;
 
+drop policy if exists "tournaments_read" on public.tournaments;
 create policy "tournaments_read" on public.tournaments for select using (true);
+drop policy if exists "tournaments_insert" on public.tournaments;
 create policy "tournaments_insert" on public.tournaments
   for insert with check (auth.uid() = created_by);
+drop policy if exists "tournaments_update_owner" on public.tournaments;
 create policy "tournaments_update_owner" on public.tournaments
   for update using (auth.uid() = created_by);
 
+drop policy if exists "tmembers_read" on public.tournament_members;
 create policy "tmembers_read" on public.tournament_members for select using (true);
+drop policy if exists "tmembers_insert" on public.tournament_members;
 create policy "tmembers_insert" on public.tournament_members
   for insert with check (
     auth.uid() = user_id
@@ -65,6 +70,7 @@ create policy "tmembers_insert" on public.tournament_members
       where t.id = tournament_members.tournament_id and t.status = 'draft'
     )
   );
+drop policy if exists "tmembers_delete" on public.tournament_members;
 create policy "tmembers_delete" on public.tournament_members
   for delete using (
     auth.uid() = user_id
@@ -74,7 +80,9 @@ create policy "tmembers_delete" on public.tournament_members
     )
   );
 
+drop policy if exists "tmatches_read" on public.tournament_matches;
 create policy "tmatches_read" on public.tournament_matches for select using (true);
+drop policy if exists "tmatches_insert_owner" on public.tournament_matches;
 create policy "tmatches_insert_owner" on public.tournament_matches
   for insert with check (
     exists (
@@ -82,6 +90,7 @@ create policy "tmatches_insert_owner" on public.tournament_matches
       where t.id = tournament_matches.tournament_id and t.created_by = auth.uid()
     )
   );
+drop policy if exists "tmatches_update" on public.tournament_matches;
 create policy "tmatches_update" on public.tournament_matches
   for update using (
     exists (

@@ -16,9 +16,12 @@ create table if not exists public.matchmaking_queue (
 
 alter table public.matchmaking_queue enable row level security;
 
+drop policy if exists "queue_read_own" on public.matchmaking_queue;
 create policy "queue_read_own" on public.matchmaking_queue
   for select using (auth.uid() = user_id);
+drop policy if exists "queue_insert_own" on public.matchmaking_queue;
 create policy "queue_insert_own" on public.matchmaking_queue
   for insert with check (auth.uid() = user_id);
+drop policy if exists "queue_delete_own" on public.matchmaking_queue;
 create policy "queue_delete_own" on public.matchmaking_queue
   for delete using (auth.uid() = user_id);
