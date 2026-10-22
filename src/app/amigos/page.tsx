@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { FriendSearch } from "@/components/friend-search";
@@ -116,7 +117,10 @@ export default async function AmigosPage() {
                   key={f.id}
                   className="flex items-center justify-between rounded border border-carbon-700 bg-carbon-900 px-3 py-2"
                 >
-                  <span className="flex items-center gap-3 text-sm text-neutral-200">
+                  <Link
+                    href={`/amigos/${p?.id}`}
+                    className="flex items-center gap-3 text-sm text-neutral-200 transition hover:text-pitch-light"
+                  >
                     {p?.avatar_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -130,8 +134,16 @@ export default async function AmigosPage() {
                       </span>
                     )}
                     {p?.username ?? "Jugador"}
+                  </Link>
+                  <span className="flex items-center gap-3">
+                    <Link
+                      href={`/amigos/${p?.id}`}
+                      className="text-xs font-semibold uppercase tracking-wider text-gold hover:text-yellow-300"
+                    >
+                      Rivalidad
+                    </Link>
+                    <FriendActions friendshipId={f.id} kind="friend" />
                   </span>
-                  <FriendActions friendshipId={f.id} kind="friend" />
                 </li>
               );
             })}
