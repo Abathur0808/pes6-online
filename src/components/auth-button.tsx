@@ -33,13 +33,13 @@ export function AuthButton() {
       <div className="flex items-center gap-3">
         <Link
           href="/perfil"
-          className="text-sm uppercase tracking-wide text-pitch-light hover:underline"
+          className="max-w-28 truncate text-sm uppercase tracking-wide text-pitch-light hover:underline"
         >
           {user.user_metadata?.username ?? user.email}
         </Link>
         <button
           onClick={signOut}
-          className="rounded border border-carbon-600 px-3 py-1 text-xs uppercase tracking-wide text-neutral-400 transition hover:border-pitch hover:text-pitch-light"
+          className="rounded border border-carbon-600 px-3 py-1.5 text-xs uppercase tracking-wide text-neutral-400 transition hover:border-pitch hover:text-pitch-light"
         >
           Salir
         </button>

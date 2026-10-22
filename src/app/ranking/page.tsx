@@ -34,7 +34,8 @@ export default async function RankingPage() {
           Sin partidos verificados todavía
         </div>
       ) : (
-        <table className="mt-8 w-full overflow-hidden rounded-lg border border-carbon-700 text-left">
+        <div className="mt-8 overflow-x-auto rounded-lg border border-carbon-700">
+        <table className="w-full text-left">
           <thead className="bg-carbon-800 text-xs uppercase tracking-wider text-neutral-500">
             <tr>
               <th className="px-4 py-3">#</th>
@@ -73,6 +74,7 @@ export default async function RankingPage() {
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );

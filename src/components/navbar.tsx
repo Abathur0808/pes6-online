@@ -23,7 +23,7 @@ export function Navbar() {
           <span className="flex h-8 w-8 items-center justify-center rounded bg-pitch font-sport text-sm font-bold text-carbon-950">
             P6
           </span>
-          <span className="font-sport text-lg font-semibold uppercase tracking-wider">
+          <span className="hidden font-sport text-lg font-semibold uppercase tracking-wider sm:inline">
             PES<span className="text-pitch">6</span> Online
           </span>
         </Link>

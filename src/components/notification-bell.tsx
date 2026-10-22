@@ -28,7 +28,7 @@ export function NotificationBell() {
   return (
     <Link
       href="/notificaciones"
-      className="relative text-neutral-400 transition hover:text-pitch-light"
+      className="relative -m-2 p-2 text-neutral-400 transition hover:text-pitch-light"
       aria-label={`Notificaciones${count > 0 ? ` (${count})` : ""}`}
     >
       <svg

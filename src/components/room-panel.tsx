@@ -243,12 +243,14 @@ export function RoomPanel({
             <p className="text-xs uppercase tracking-wider text-neutral-500">
               Código de invitación
             </p>
-          Modo:{" "}
-          <span className="text-sky-300">
-            {MODE_LABEL[room.match_settings?.mode ?? "1v1"]}
-          </span>
-          {" · "}  <p className="scoreboard font-sport text-2xl font-bold text-gold">
+            <p className="scoreboard font-sport text-2xl font-bold text-gold">
               {room.code}
+            </p>
+            <p className="mt-1 text-xs text-neutral-400">
+              Modo:{" "}
+              <span className="text-sky-300">
+                {MODE_LABEL[room.match_settings?.mode ?? "1v1"]}
+              </span>
             </p>
           </div>
         </div>

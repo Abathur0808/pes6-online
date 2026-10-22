@@ -67,12 +67,21 @@ label {
   touch-action: manipulation;
 }
 
-/* Inputs con letra ≥16px: evita el auto-zoom al enfocar en iOS Safari. */
+/* En pantallas táctiles: letra ≥16px en inputs (sin auto-zoom iOS)
+   y zona de toque mínima de 40px en controles (regla 44px de Apple/Google
+   ligeramente relajada para la UI compacta). */
 @media (pointer: coarse) {
   input,
   select,
   textarea {
     font-size: 16px;
+  }
+  button {
+    min-height: 40px;
+  }
+  input,
+  select {
+    min-height: 40px;
   }
 }
 

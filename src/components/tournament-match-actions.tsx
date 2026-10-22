@@ -40,7 +40,7 @@ export function TReportForm({ matchId }: { matchId: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="flex items-center gap-1.5">
+    <form onSubmit={submit} className="flex flex-wrap items-center gap-1.5">
       <input
         type="number"
         min={0}
@@ -141,7 +141,7 @@ export function TOwnerControls({
 
   return (
     <div className="mt-1.5 space-y-1 border-t border-carbon-700 pt-1.5">
-      <form onSubmit={submit} className="flex items-center gap-1.5">
+      <form onSubmit={submit} className="flex flex-wrap items-center gap-1.5">
         <span className="text-[9px] uppercase tracking-wider text-neutral-500">
           Org:
         </span>

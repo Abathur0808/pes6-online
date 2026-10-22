@@ -128,7 +128,7 @@ export function SetDateForm({ matchId }: { matchId: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="flex items-center gap-2">
+    <form onSubmit={submit} className="flex flex-wrap items-center gap-2">
       <input
         type="datetime-local"
         value={value}
