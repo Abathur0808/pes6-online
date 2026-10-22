@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-// TODO: pegar aquí el enlace directo de MediaFire cuando esté subido.
-// Ejemplo: "https://www.mediafire.com/file/XXXXXXX/pes6-launcher.zip/file"
-const MEDIAFIRE_URL = "";
+// Enlace mirror del launcher en MediaFire.
+const MEDIAFIRE_URL =
+  "https://www.mediafire.com/file/4joo52izm2giapn/pes6-launcher.rar/file";
 
 export default function DownloadPage() {
   return (
@@ -28,7 +28,7 @@ export default function DownloadPage() {
       <ol className="mt-10 space-y-4">
         <li className="rounded-lg border border-carbon-700 bg-carbon-800 p-5">
           <h2 className="font-sport font-semibold uppercase text-pitch-light">
-            1. Descomprime el zip
+            1. Descomprime el archivo
           </h2>
           <p className="mt-1 text-sm text-neutral-400">
             En cualquier carpeta (p. ej. junto al juego en{" "}
@@ -54,13 +54,17 @@ export default function DownloadPage() {
             El launcher te pedirá permisos de administrador para configurar la
             red y abrirá el juego. En la pantalla de Red escribe{" "}
             <code className="text-pitch-light">usuario-contraseña</code>.
+          </p>
+        </li>
+      </ol>
+
       {/* Mirrors alternativos */}
       <section className="mt-10 rounded-lg border border-carbon-700 bg-carbon-800 p-5">
         <h2 className="font-sport font-semibold uppercase tracking-wide text-pitch-light">
           Descargas alternativas
         </h2>
         <p className="mt-1 text-sm text-neutral-400">
-          Si la descarga directa te da problemas, usa uno de los mirrors:
+          Si la descarga directa te da problemas, usa el mirror:
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           {MEDIAFIRE_URL ? (
@@ -80,20 +84,17 @@ export default function DownloadPage() {
         </div>
         <p className="mt-3 text-xs text-neutral-500">
           Mismo contenido que el zip oficial: launcher .exe + configuración +
-          código fuente auditable. Verifica que el archivo se llame{" "}
-          <code>pes6-launcher.zip</code>.
+          código fuente auditable. El archivo se llama{" "}
+          <code>pes6-launcher.rar</code> — se descomprime con WinRAR, 7-Zip o
+          el propio Windows.
         </p>
       </section>
-
-          </p>
-        </li>
-      </ol>
 
       <div className="mt-8 rounded-lg border border-gold/30 bg-gold/5 p-5 text-sm text-neutral-400">
         <strong className="text-gold">Aviso de seguridad:</strong> Windows
         SmartScreen puede mostrar una advertencia porque el ejecutable no está
         firmado digitalmente (firmar cuesta dinero; pendiente). El código
-        fuente (<code>PES6Launcher.cs</code>) va incluido en el zip y es
+        fuente (<code>PES6Launcher.cs</code>) va incluido en el archivo y es
         auditable: solo escribe un bloque marcado en el archivo{" "}
         <code>hosts</code> y lanza el juego. No descarga nada ni toca los
         archivos de PES 6.
