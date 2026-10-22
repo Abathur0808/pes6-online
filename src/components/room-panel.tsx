@@ -119,12 +119,15 @@ export function RoomPanel({
     };
   }, [room.id]);
 
-  const slots = [0, 1].map((i) => members[i] ?? null);
+  const cap = room.max_players ?? 2;
+  const slots = Array.from({ length: cap }, (_, i) => members[i] ?? null);
 
   return (
     <div className="space-y-6">
       {/* Slots de jugadores estilo marcador */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div
+        className={`grid gap-4 ${cap > 2 ? "md:grid-cols-3" : "md:grid-cols-2"}`}
+      >
         {slots.map((m, i) => (
           <div
             key={i}

@@ -31,6 +31,10 @@ export async function createRoom(
     ? (modeRaw as RoomMode)
     : "1v1";
   const server = String(formData.get("server") ?? DEFAULT_SERVER).trim();
+  const maxPlayers = Math.min(
+    8,
+    Math.max(2, Number(formData.get("max_players") ?? 2) || 2)
+  );
 
   if (!name || name.length > 60) {
     return { error: "El nombre de la sala es obligatorio (máx. 60 caracteres)." };
@@ -49,6 +53,7 @@ export async function createRoom(
       code: generateCode(),
       host_id: user.id,
       status: "waiting" satisfies RoomStatus,
+      max_players: maxPlayers,
       match_settings: { match_length: matchLength, patch, mode, server },
     })
     .select("id, code")
@@ -86,7 +91,7 @@ export async function joinRoom(
 
   const { data: room } = await supabase
     .from("rooms")
-    .select("id, status")
+    .select("id, status, max_players")
     .eq("code", code)
     .single();
 
@@ -95,7 +100,7 @@ export async function joinRoom(
     return { error: "Esta sala ya finalizó." };
   }
 
-  // Comprobar aforo (máx. 2) en servidor vía RLS + count.
+  // Comprobar aforo (max_players) en servidor vía RLS + count.
   const { count } = await supabase
     .from("room_members")
     .select("*", { count: "exact", head: true })
@@ -109,7 +114,8 @@ export async function joinRoom(
     .maybeSingle();
 
   if (!existing) {
-    if ((count ?? 0) >= 2) return { error: "La sala está completa." };
+    if ((count ?? 0) >= (room.max_players ?? 2))
+      return { error: "La sala está completa." };
 
     const { error } = await supabase.from("room_members").insert({
       room_id: room.id,
@@ -118,11 +124,14 @@ export async function joinRoom(
     });
     if (error) return { error: error.message };
 
-    await supabase
-      .from("rooms")
-      .update({ status: "full" satisfies RoomStatus })
-      .eq("id", room.id)
-      .eq("status", "waiting");
+    // Sala llena solo si alcanzó el aforo tras unirse.
+    if ((count ?? 0) + 1 >= (room.max_players ?? 2)) {
+      await supabase
+        .from("rooms")
+        .update({ status: "full" satisfies RoomStatus })
+        .eq("id", room.id)
+        .eq("status", "waiting");
+    }
   }
 
   revalidatePath(`/salas/${room.id}`);

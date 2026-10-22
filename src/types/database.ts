@@ -35,6 +35,8 @@ export interface Room {
   name: string;
   status: RoomStatus;
   host_id: string;
+  /** Aforo de la sala (2-8). */
+  max_players?: number;
   match_settings: {
     match_length?: number;
     difficulty?: string;
@@ -95,6 +97,43 @@ export interface Team {
   era: string | null;
   crest_url: string | null;
   is_demo: boolean;
+}
+
+export type LeagueStatus = "draft" | "active" | "finished";
+export type LeagueMatchStatus =
+  | "scheduled"
+  | "pending_confirm"
+  | "played"
+  | "cancelled";
+
+export interface League {
+  id: string;
+  name: string;
+  description: string | null;
+  status: LeagueStatus;
+  created_by: string;
+  created_at: string;
+}
+
+export interface LeagueMember {
+  league_id: string;
+  user_id: string;
+  joined_at: string;
+  profile?: Profile;
+}
+
+export interface LeagueMatch {
+  id: string;
+  league_id: string;
+  matchday: number;
+  home_user_id: string;
+  away_user_id: string;
+  home_score: number | null;
+  away_score: number | null;
+  status: LeagueMatchStatus;
+  reported_by: string | null;
+  home?: Profile;
+  away?: Profile;
 }
 
 export interface Match {

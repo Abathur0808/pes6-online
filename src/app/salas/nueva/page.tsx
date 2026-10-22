@@ -103,6 +103,25 @@ export default function NewRoomPage() {
         </p>
 
         <label className="block text-sm uppercase tracking-wide text-neutral-400">
+          Jugadores en la sala
+          <select
+            name="max_players"
+            defaultValue="2"
+            className="mt-1 w-full rounded border border-carbon-600 bg-carbon-900 px-3 py-2 text-neutral-200 outline-none focus:border-pitch"
+          >
+            {[2, 3, 4, 5, 6, 7, 8].map((n) => (
+              <option key={n} value={n}>
+                {n} {n === 2 ? "(1v1)" : "jugadores"}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="text-xs text-neutral-500">
+          Más de 2 = sala lobby para co-op o duelo de clanes (el partido
+          sigue siendo 1v1 en el juego).
+        </p>
+
+        <label className="block text-sm uppercase tracking-wide text-neutral-400">
           Duración del partido
           <select
             name="match_length"
