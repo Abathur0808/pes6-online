@@ -10,9 +10,10 @@ const KIND_META: Record<
   AppNotification["kind"],
   { icon: string; label: string; color: string }
 > = {
-  friend_request: {
-    icon: "👥",
-    label: "Amistad",
+  challenge: { icon: "⚔️", label: "Desafío", color: "text-gold" },
+  challenge_accepted: {
+    icon: "🎮",
+    label: "Sala lista",
     color: "text-pitch-light",
   },
   confirm_score: {
@@ -20,16 +21,17 @@ const KIND_META: Record<
     label: "Confirmar resultado",
     color: "text-gold",
   },
+  friend_request: {
+    icon: "👥",
+    label: "Amistad",
+    color: "text-pitch-light",
+  },
   league_match: {
     icon: "⚽",
     label: "Partido de liga",
     color: "text-sky-300",
   },
-  commend: {
-    icon: "🤝",
-    label: "Elogio",
-    color: "text-gold",
-  },
+  commend: { icon: "🤝", label: "Elogio", color: "text-gold" },
 };
 
 export default async function NotificacionesPage() {
@@ -45,6 +47,8 @@ export default async function NotificacionesPage() {
 
   // Orden de importancia: lo que requiere acción primero.
   const order: AppNotification["kind"][] = [
+    "challenge",
+    "challenge_accepted",
     "confirm_score",
     "friend_request",
     "league_match",
@@ -60,7 +64,8 @@ export default async function NotificacionesPage() {
         <span className="text-pitch">Notificaciones</span>
       </h1>
       <p className="mt-1 text-sm text-neutral-500">
-        Solicitudes, resultados por confirmar y tus partidos pendientes.
+        Desafíos, solicitudes, resultados por confirmar y tus partidos
+        pendientes.
       </p>
 
       {sorted.length === 0 ? (

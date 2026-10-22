@@ -2,6 +2,10 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { AddFriendButton } from "@/components/add-friend-button";
+import {
+  ChallengeActions,
+  ChallengeButton,
+} from "@/components/challenge-buttons";
 import type { Profile } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -101,6 +105,16 @@ export default async function RivalryPage({
     .or(
       `and(home_user_id.eq.${user.id},away_user_id.eq.${id}),and(home_user_id.eq.${id},away_user_id.eq.${user.id})`
     );
+
+  // Desafío pendiente entre nosotros (cualquier dirección).
+  const { data: pendingChallenge } = await supabase
+    .from("challenges")
+    .select("id, challenger_id")
+    .eq("status", "pending")
+    .or(
+      `and(challenger_id.eq.${user.id},challenged_id.eq.${id}),and(challenger_id.eq.${id},challenged_id.eq.${user.id})`
+    )
+    .maybeSingle();
 
   // Elogios cruzados.
   const { data: commends } = await supabase
@@ -236,11 +250,25 @@ export default async function RivalryPage({
         </div>
       </header>
 
-      {!isFriend && !pendingOut && (
-        <div className="mt-3">
+      {/* Desafío: pendiente o botón para lanzar uno */}
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        {pendingChallenge ? (
+          <>
+            <span className="text-sm font-semibold uppercase tracking-wider text-gold">
+              ⚔ Desafío pendiente
+            </span>
+            <ChallengeActions
+              challengeId={pendingChallenge.id}
+              incoming={pendingChallenge.challenger_id === id}
+            />
+          </>
+        ) : (
+          <ChallengeButton userId={id} />
+        )}
+        {!isFriend && !pendingOut && (
           <AddFriendButton addresseeId={id} username={rival.username} />
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Marcador de la rivalidad */}
       <section className="mt-6 rounded-lg border border-pitch/40 bg-carbon-800 p-6 text-center">

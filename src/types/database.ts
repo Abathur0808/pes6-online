@@ -80,6 +80,17 @@ export interface Friendship {
   addressee?: Profile;
 }
 
+export interface Challenge {
+  id: string;
+  challenger_id: string;
+  challenged_id: string;
+  status: "pending" | "accepted" | "declined" | "cancelled";
+  room_id: string | null;
+  created_at: string;
+  challenger?: Profile;
+  challenged?: Profile;
+}
+
 export type CommendTag = "fair_play" | "good_game" | "punctual";
 
 export interface Commend {
