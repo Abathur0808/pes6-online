@@ -274,6 +274,16 @@ export default async function LigaDetailPage({
                               Por confirmar
                             </span>
                           )}
+                          {m.proof_url && (
+                            <a
+                              href={m.proof_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[10px] uppercase tracking-wider text-sky-300 hover:text-sky-200"
+                            >
+                              📷 Captura
+                            </a>
+                          )}
                         </div>
                         {m.scheduled_at && (
                           <p className="mt-1 text-xs text-neutral-500">

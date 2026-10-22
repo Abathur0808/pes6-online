@@ -152,7 +152,8 @@ export async function generateFixtures(leagueId: string): Promise<void> {
 export async function reportScore(
   matchId: string,
   homeScore: number,
-  awayScore: number
+  awayScore: number,
+  proofUrl?: string
 ): Promise<LeagueResult> {
   const supabase = await createClient();
   const {
@@ -185,6 +186,7 @@ export async function reportScore(
       away_score: awayScore,
       reported_by: user.id,
       status: "pending_confirm",
+      ...(proofUrl ? { proof_url: proofUrl } : {}),
     })
     .eq("id", matchId);
 

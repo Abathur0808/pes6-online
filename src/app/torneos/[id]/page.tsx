@@ -208,6 +208,18 @@ export default async function TorneoPage({
                                 Por confirmar
                               </p>
                             )}
+                            {m.proof_url && (
+                              <p className="px-3 pb-1.5">
+                                <a
+                                  href={m.proof_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-[10px] uppercase tracking-wider text-sky-300 hover:text-sky-200"
+                                >
+                                  📷 Ver captura
+                                </a>
+                              </p>
+                            )}
                             {user && iPlay && !played && bothPlayers && (
                               <div className="flex items-center gap-2 border-t border-carbon-700 px-3 py-1.5">
                                 {waitingMe ? (

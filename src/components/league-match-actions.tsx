@@ -7,6 +7,7 @@ import {
   reportScore,
   setMatchDate,
 } from "@/lib/leagues/actions";
+import { uploadProof } from "@/lib/proofs/actions";
 
 /** Formulario para reportar el marcador de un partido de liga. */
 export function ReportScoreForm({
@@ -20,6 +21,7 @@ export function ReportScoreForm({
 }) {
   const [home, setHome] = useState("");
   const [away, setAway] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
@@ -29,7 +31,18 @@ export function ReportScoreForm({
     const a = Number(away);
     if (home === "" || away === "" || isNaN(h) || isNaN(a)) return;
     start(async () => {
-      const res = await reportScore(matchId, h, a);
+      let proofUrl: string | undefined;
+      if (file) {
+        const fd = new FormData();
+        fd.append("proof", file);
+        const up = await uploadProof(fd);
+        if (up.error) {
+          setError(up.error);
+          return;
+        }
+        proofUrl = up.url;
+      }
+      const res = await reportScore(matchId, h, a, proofUrl);
       if (res.error) setError(res.error);
     });
   }
@@ -55,6 +68,18 @@ export function ReportScoreForm({
         className="w-12 rounded border border-carbon-600 bg-carbon-900 px-2 py-1 text-center text-sm text-neutral-200 outline-none focus:border-pitch"
         aria-label={`Goles de ${awayName}`}
       />
+      <label
+        className="cursor-pointer rounded border border-carbon-600 px-2 py-1 text-xs text-neutral-400 transition hover:border-pitch hover:text-pitch-light"
+        title="Adjuntar captura del resultado (opcional)"
+      >
+        {file ? "📷✓" : "📷"}
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+        />
+      </label>
       <button
         type="submit"
         disabled={pending || home === "" || away === ""}

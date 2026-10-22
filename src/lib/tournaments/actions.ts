@@ -232,7 +232,8 @@ async function closeMatch(
   home: number,
   away: number,
   reportedBy: string,
-  status: "pending_confirm" | "played"
+  status: "pending_confirm" | "played",
+  proofUrl?: string
 ): Promise<TResult> {
   if (home === away)
     return { error: "En eliminatoria no hay empates — decidan el desempate." };
@@ -262,6 +263,7 @@ async function closeMatch(
       reported_by: reportedBy,
       status,
       ...(status === "played" ? { winner_id: winnerId } : {}),
+      ...(proofUrl ? { proof_url: proofUrl } : {}),
     })
     .eq("id", matchId);
 
@@ -286,7 +288,8 @@ async function closeMatch(
 export async function reportTournamentScore(
   matchId: string,
   homeScore: number,
-  awayScore: number
+  awayScore: number,
+  proofUrl?: string
 ): Promise<TResult> {
   const supabase = await createClient();
   const {
@@ -311,7 +314,8 @@ export async function reportTournamentScore(
     homeScore,
     awayScore,
     user.id,
-    "pending_confirm"
+    "pending_confirm",
+    proofUrl
   );
 }
 

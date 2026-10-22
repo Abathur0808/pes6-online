@@ -145,6 +145,8 @@ export interface LeagueMatch {
   reported_by: string | null;
   /** Fecha/hora pactada para jugar (null = sin acordar). */
   scheduled_at?: string | null;
+  /** Captura del resultado subida como prueba. */
+  proof_url?: string | null;
   home?: Profile;
   away?: Profile;
 }
@@ -181,6 +183,7 @@ export interface TournamentMatch {
   status: LeagueMatchStatus;
   reported_by: string | null;
   scheduled_at?: string | null;
+  proof_url?: string | null;
   home?: Profile | null;
   away?: Profile | null;
 }
