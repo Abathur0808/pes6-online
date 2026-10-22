@@ -149,6 +149,42 @@ export interface LeagueMatch {
   away?: Profile;
 }
 
+export interface Tournament {
+  id: string;
+  name: string;
+  description: string | null;
+  status: LeagueStatus;
+  created_by: string;
+  winner_id: string | null;
+  rounds: number;
+  created_at: string;
+  winner?: Profile;
+}
+
+export interface TournamentMember {
+  tournament_id: string;
+  user_id: string;
+  joined_at: string;
+  profile?: Profile;
+}
+
+export interface TournamentMatch {
+  id: string;
+  tournament_id: string;
+  round: number;
+  slot: number;
+  home_user_id: string | null;
+  away_user_id: string | null;
+  home_score: number | null;
+  away_score: number | null;
+  winner_id: string | null;
+  status: LeagueMatchStatus;
+  reported_by: string | null;
+  scheduled_at?: string | null;
+  home?: Profile | null;
+  away?: Profile | null;
+}
+
 export interface Match {
   id: string;
   room_id: string | null;

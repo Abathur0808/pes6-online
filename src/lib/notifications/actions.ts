@@ -42,8 +42,16 @@ export async function getNotifications(): Promise<NotificationsResult> {
   } = await supabase.auth.getUser();
   if (!user) return { items: [], count: 0 };
 
-  const [reqRes, chalInRes, chalOutRes, confirmRes, matchRes, commendRes] =
-    await Promise.all([
+  const [
+    reqRes,
+    chalInRes,
+    chalOutRes,
+    confirmRes,
+    matchRes,
+    tConfRes,
+    tMatchRes,
+    commendRes,
+  ] = await Promise.all([
       // Solicitudes de amistad pendientes hacia mí.
       supabase
         .from("friendships")
@@ -90,6 +98,28 @@ export async function getNotifications(): Promise<NotificationsResult> {
         .eq("status", "scheduled")
         .or(`home_user_id.eq.${user.id},away_user_id.eq.${user.id}`)
         .order("scheduled_at", { ascending: true, nullsFirst: false })
+        .limit(10),
+
+      // Marcadores de torneo reportados que yo debo confirmar.
+      supabase
+        .from("tournament_matches")
+        .select(
+          "id, tournament_id, round, home_user_id, home:profiles!tournament_matches_home_user_id_fkey(username), away:profiles!tournament_matches_away_user_id_fkey(username), tournament:tournaments(name)"
+        )
+        .eq("status", "pending_confirm")
+        .neq("reported_by", user.id)
+        .or(`home_user_id.eq.${user.id},away_user_id.eq.${user.id}`),
+
+      // Mis partidos de torneo pendientes.
+      supabase
+        .from("tournament_matches")
+        .select(
+          "id, tournament_id, round, home_user_id, home:profiles!tournament_matches_home_user_id_fkey(username), away:profiles!tournament_matches_away_user_id_fkey(username), tournament:tournaments(name)"
+        )
+        .eq("status", "scheduled")
+        .not("home_user_id", "is", null)
+        .not("away_user_id", "is", null)
+        .or(`home_user_id.eq.${user.id},away_user_id.eq.${user.id}`)
         .limit(10),
 
       // Elogios recibidos recientemente.
@@ -178,6 +208,36 @@ export async function getNotifications(): Promise<NotificationsResult> {
             })}`
           : " · sin fecha pactada"),
       href: `/ligas/${m.league_id}`,
+    });
+  }
+
+  for (const m of tConfRes.data ?? []) {
+    const t =
+      (m.tournament as unknown as { name: string } | null)?.name ?? "Torneo";
+    const iAmHome = m.home_user_id === user.id;
+    const rival = (
+      (iAmHome ? m.away : m.home) as unknown as { username: string } | null
+    )?.username;
+    items.push({
+      kind: "confirm_score",
+      text: `Confirma el marcador reportado por ${rival ?? "tu rival"}`,
+      detail: `${t} · ${m.round}ª ronda`,
+      href: `/torneos/${m.tournament_id}`,
+    });
+  }
+
+  for (const m of tMatchRes.data ?? []) {
+    const t =
+      (m.tournament as unknown as { name: string } | null)?.name ?? "Torneo";
+    const iAmHome = m.home_user_id === user.id;
+    const rival = (
+      (iAmHome ? m.away : m.home) as unknown as { username: string } | null
+    )?.username;
+    items.push({
+      kind: "league_match",
+      text: `Partido de torneo contra ${rival ?? "tu rival"}`,
+      detail: `${t} · ${m.round}ª ronda`,
+      href: `/torneos/${m.tournament_id}`,
     });
   }
 
