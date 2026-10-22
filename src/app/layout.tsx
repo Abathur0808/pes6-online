@@ -3,6 +3,7 @@ import { Oswald } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import { PresenceProvider } from "@/components/presence-provider";
 
 const oswald = Oswald({
   subsets: ["latin"],
@@ -23,9 +24,11 @@ export default function RootLayout({
     <html lang="es" className={oswald.variable}>
       <body className="min-h-screen bg-carbon-950 text-neutral-200 antialiased">
         <div className="pitch-stripes flex min-h-screen flex-col">
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <PresenceProvider>
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </PresenceProvider>
         </div>
       </body>
     </html>

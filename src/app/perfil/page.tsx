@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { AvatarForm } from "@/components/avatar-form";
+import { AchievementBadges } from "@/components/achievement-badges";
 import type { Profile } from "@/types/database";
 
 function winRate(p: Profile) {
@@ -94,6 +95,13 @@ export default async function ProfilePage() {
         <p className="mt-2 text-xs text-neutral-500">
           Solo pueden elogiarte jugadores que compartieron sala contigo.
         </p>
+      </div>
+      <div className="mt-6">
+        <AchievementBadges
+          matches={profile?.matches_played ?? 0}
+          wins={profile?.wins ?? 0}
+          commends={(commends ?? []).length}
+        />
       </div>
 
       <AvatarForm />

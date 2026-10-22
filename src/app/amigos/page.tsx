@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { FriendSearch } from "@/components/friend-search";
 import { FriendActions } from "@/components/friend-actions";
+import { OnlineDot } from "@/components/presence-provider";
 import type { Friendship } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -134,6 +135,7 @@ export default async function AmigosPage() {
                       </span>
                     )}
                     {p?.username ?? "Jugador"}
+                    <OnlineDot userId={p?.id} />
                   </Link>
                   <span className="flex items-center gap-3">
                     <Link
